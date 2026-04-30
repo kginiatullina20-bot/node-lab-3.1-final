@@ -1,0 +1,16 @@
+﻿version: "3.8"
+
+services:
+  app:
+    image: kamsi1967/node-lab-3.1-final:latest
+    ports:
+      - "3000:3000"
+    container_name: my-node-app-kamila
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=30
+      - WATCHTOWER_CLEANUP=true
