@@ -1,4 +1,4 @@
-﻿name: Release Node.js App
+﻿name: Release Node.js App with DinD
 
 on:
   push:
@@ -6,22 +6,27 @@ on:
       - main
 
 jobs:
-  publish-docker-hub:
-    name: Publish image to Docker Hub
+  build-and-push-dind:
+    name: Build & Push using Docker-in-Docker
     runs-on: ubuntu-latest
+
+    container:
+      image: docker:dind
+      options: --privileged
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: kamsi1967/node-lab-3.1-final:latest
+      - name: Build and push image
+        run: |
+          docker build -t kamsi1967/node-lab-3.1-final:dind .
+          docker push kamsi1967/node-lab-3.1-final:dind
+
+      - name: Tag as latest
+        run: |
+          docker tag kamsi1967/node-lab-3.1-final:dind kamsi1967/node-lab-3.1-final:latest
+          docker push kamsi1967/node-lab-3.1-final:latest
